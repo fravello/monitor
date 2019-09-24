@@ -1,17 +1,29 @@
+const path = require('path');
 const express = require('express');
-const logger = require('morgan');
-const bodyParser = require('body-parser');
+const morgan = require('morgan');
+const mongoose = require('mongoose');
+
 const app = express();
 
-app.set('port', process.env.PORT || 3000);
- 
-app.use(logger('dev'));
-app.use(bodyParser.urlencoded({extended:false}));
+// connection to db
+mongoose.connect('mongodb://localhost/iotdb',{useNewUrlParser: true,  useUnifiedTopology: true})
+  .then(db => console.log('db connected'))
+  .catch(err => console.log(err));
 
-app.get('/', function (req, res) {
-    res.sendFile('index.html', {root: __dirname});
-});
+// importing routes
+const indexRoutes = require('./routes/index');
+
+// settings
+app.set('port', process.env.PORT || 3000);
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
+
+// middlewares
+app.use(morgan('dev'));
+app.use(express.urlencoded({extended: false}))
+// routes
+app.use('/', indexRoutes);
 
 app.listen(app.get('port'), () => {
-    console.log('Server on port ', app.get('port'));
+  console.log(`server on port ${app.get('port')}`);
 });
